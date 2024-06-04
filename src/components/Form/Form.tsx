@@ -4,38 +4,49 @@ import styles from './Form.module.css'
 import { SearchType } from '../../types'
 import Alert from '../Alert/Alert'
 
+//definimos los tipos de datos que le llegan a form
+type FormProps = {
+    fetchWeather:(search: SearchType) => Promise<void>
+}
 
-export default function Form() {
+export default function Form({fetchWeather}:FormProps) {
+    
+    //state para el form
     const [search,setSearch] = useState<SearchType>({
         city:'',
         country:''
     })
 
+    //state para el mensaje de alerta
     const[alert,setAlert] = useState('')
 
 
+
+    //escribimos en el state lo que este en el formulario
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>| React.ChangeEvent<HTMLSelectElement> ) =>{
         setSearch({
             ... search, [e.target.name]:e.target.value
         })
-
-
     }
-    const handleSubmit = ( e: React.FormEvent<HTMLFormElement>) => {
 
+
+    //si todos los campos del formulario estan bien, mandamos los datos a fetch weather
+    const handleSubmit = ( e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         if(Object.values(search).includes('')){
             setAlert('Todos los campos son obligatorios')
-            return
+            return  
+         }
 
-        }
+        fetchWeather(search)
     }
 
   return (
     <form className={styles.form}
     onSubmit={handleSubmit}
     >
+        {/* validamos que esta state tenga algo y mandamos el state como children */}
         {alert && <Alert>{alert}</Alert>}
 
         <div className={styles.field}>
