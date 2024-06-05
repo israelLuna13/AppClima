@@ -1,5 +1,6 @@
-import { SearchType, Weather } from "../types"
+import { SearchType } from "../types"
 import axios from 'axios'
+import {z} from 'zod'
 export default function useWeather() {
 
 
@@ -7,17 +8,31 @@ export default function useWeather() {
   //validamos que la respuesta que obtengamos de la apli tenga esta estructura
   //esta funcion recibira un dato desconocio por el momento
 
-  function isWeatherResponse(weather:unknown):weather is Weather{
-    return(
-      Boolean(weather) && 
-      typeof weather === 'object' && 
-      typeof (weather as Weather).name === 'string' &&
-      typeof (weather as Weather).main.temp === 'number' &&
-      typeof (weather as Weather).main.temp_max === 'number' &&
-      typeof (weather as Weather).main.temp_min === 'number'
-    )
-  }
+  // function isWeatherResponse(weather:unknown):weather is Weather{
+  //   return(
+  //     Boolean(weather) && 
+  //     typeof weather === 'object' && 
+  //     typeof (weather as Weather).name === 'string' &&
+  //     typeof (weather as Weather).main.temp === 'number' &&
+  //     typeof (weather as Weather).main.temp_max === 'number' &&
+  //     typeof (weather as Weather).main.temp_min === 'number'
+  //   )
+  // }
 
+
+  // zod
+  //esquima
+  const Weather = z.object({
+    name:z.string(),
+    main:z.object({
+      temp:z.number(),
+      temp_max:z.number(),
+      temp_min:z.number(),
+      
+    })
+  })
+
+  type Weather = z.infer<typeof Weather>
 
 
     const fetchWeather=async(search:SearchType) =>{
@@ -33,15 +48,25 @@ export default function useWeather() {
 
             //segundo llamado a la api
             const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${appId}&units=imperial`
-            const {data:weatherResult} = await axios(weatherUrl)
+            
+              //zood
+              const {data:weatherResult} = await axios(weatherUrl)
 
-            //castear el type 
-            //type guards 
-            const result = isWeatherResponse(weatherResult)
+              //validamos si la respuesta obtenido tiene la estructura de nuestro esquima
+              const result = Weather.safeParse(weatherResult)
+              if(result.success)
+                {
+                  console.log(result.data.name)
+                  console.log(result.data.main.temp)
 
-            if(result){
-              console.log(weatherResult.name)
-            }
+
+                }                  // //castear el type 
+            // //type guards 
+            // const result = isWeatherResponse(weatherResult)
+
+            // if(result){
+            //   console.log(weatherResult.name)
+            // }
 
         } catch (error) {
             console.log(error)
