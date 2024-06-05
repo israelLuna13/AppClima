@@ -4,7 +4,6 @@ import useWeather from "./hoooks/useWeather"
 function App() {
 
   const {fetchWeather} = useWeather()
-  
   return (
     <>
      <h1 className={styles.title}>Buscador de Clima</h1>
