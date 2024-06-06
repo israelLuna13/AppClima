@@ -16,18 +16,22 @@ const Weather = z.object({
 
 export type Weather = z.infer<typeof Weather>;
 
+//lo pusimos una constante para mandarlo llamar en varias parte del codigo
+const initialWeather = {
+  name:'',
+  main: {
+    temp: 0,
+    temp_max: 0,
+    temp_min: 0
+}
+}
+
 export default function useWeather() {
-  const [weather, setWeather] = useState<Weather>({
-    name: "",
-    main: {
-      temp: 0,
-      temp_min: 0,
-      temp_max: 0,
-    },
-  });
+  const [weather, setWeather] = useState<Weather>(initialWeather);//state del clima
 
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false);//statte del spinner
+  
+  const [notFound,setNotFound] = useState(false)//state del error
   //type guard o assertion
   //validamos que la respuesta que obtengamos de la apli tenga esta estructura
   //esta funcion recibira un dato desconocio por el momento
@@ -58,16 +62,22 @@ export default function useWeather() {
   const fetchWeather = async (search: SearchType) => {
     //api key
     const appId = import.meta.env.VITE_API_KEY;
-
+    //activamos el spinner cuando se haga una consulta
     setLoading(true);
+    //reiniciamos el state de weather
+    setWeather(initialWeather)
     try {
       //hacemos el primer llamado a la api
       const geoUrl = `https://api.openweathermap.org/data/2.5/weather?q=${search.city},${search.country}&appid=${appId}`;
       const { data } = await axios(geoUrl);
+
+
       // Desestructuramos el objeto data para obtener las coordenadas
       const {
         coord: { lat, lon },
       } = data;
+
+
 
       //segundo llamado a la api
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${appId}&units=imperial`;
@@ -96,12 +106,17 @@ export default function useWeather() {
       //   console.log(result.name)
       // }
     } catch (error) {
-      console.log(error);
+
+      if (axios.isAxiosError(error)) {
+        //activamos el mensaje de error que se mostrara
+        setNotFound(true)
+      }
     } finally {
+      //reseteamos el spinn, este codigo se ejcutara exista error o no
       setLoading(false);
     }
   };
 
   const hasWeatherData = useMemo(() => weather.name, [weather]);
-  return { fetchWeather, weather, hasWeatherData, loading };
+  return { fetchWeather, weather, hasWeatherData, loading,notFound };
 }
