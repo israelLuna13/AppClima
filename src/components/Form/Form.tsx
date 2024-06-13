@@ -3,14 +3,20 @@ import { countries } from '../../data/countries'
 import styles from './Form.module.css'
 import { SearchType } from '../../types'
 import Alert from '../Alert/Alert'
+import { useWeatherStore } from '../../storeZustand'
 
 //definimos los tipos de datos que le llegan a form
-type FormProps = {
-    fetchWeather:(search: SearchType) => Promise<void>
-}
+// type FormProps = {
+//     fetchWeather:(search: SearchType) => Promise<void>
+// }
 
-export default function Form({fetchWeather}:FormProps) {
+//export default function Form({fetchWeather}:FormProps)
+export default function Form() 
+{
+    //extraemos la funcion de zustand
+const fetchWeather = useWeatherStore(state => state.fetchWeather)
     
+
     //state para el form
     const [search,setSearch] = useState<SearchType>({
         city:'',
@@ -19,8 +25,6 @@ export default function Form({fetchWeather}:FormProps) {
 
     //state para el mensaje de alerta
     const[alert,setAlert] = useState('')
-
-
 
     //escribimos en el state lo que este en el formulario
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>| React.ChangeEvent<HTMLSelectElement> ) =>{
